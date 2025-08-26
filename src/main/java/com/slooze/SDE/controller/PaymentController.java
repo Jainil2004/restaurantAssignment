@@ -30,11 +30,35 @@ public class PaymentController {
     }
 
     @PatchMapping("/{paymentId}")
-    public ResponseEntity<?> updatePayment(@PathVariable Long paymentId, @RequestParam(required = false) PaymentMethod method, @RequestParam(required = false) PaymentStatus status, HttpServletRequest request) throws Exception {
+    public ResponseEntity<?> updatePayment(
+            @PathVariable Long paymentId, 
+            @RequestParam(required = false) String method, 
+            @RequestParam(required = false) String status, 
+            HttpServletRequest request) throws Exception {
         String role = request.getAttribute("role").toString();
 
         try {
-            return ResponseEntity.ok(paymentService.updatePayment(paymentId, method, status, role));
+            // Convert strings to enums
+            PaymentMethod paymentMethod = null;
+            PaymentStatus paymentStatus = null;
+            
+            if (method != null && !method.isEmpty()) {
+                try {
+                    paymentMethod = PaymentMethod.valueOf(method.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("Invalid payment method: " + method);
+                }
+            }
+            
+            if (status != null && !status.isEmpty()) {
+                try {
+                    paymentStatus = PaymentStatus.valueOf(status.toUpperCase());
+                } catch (IllegalArgumentException e) {
+                    return ResponseEntity.badRequest().body("Invalid payment status: " + status);
+                }
+            }
+            
+            return ResponseEntity.ok(paymentService.updatePayment(paymentId, paymentMethod, paymentStatus, role));
         } catch (AccessDeniedException e) {
             return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
         } catch (Exception e) {
