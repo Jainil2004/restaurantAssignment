@@ -8,6 +8,10 @@ payments.
 
 ------------------------------------------------------------------------
 
+demo video available at: https://drive.google.com/file/d/1BBDsWbDznjCBaWbjQB5Ttlv4qypvu8HW/view?usp=sharing
+
+------------------------------------------------------------------------
+
 ## ⚡ Features
 
 -   **Authentication & Authorization**
@@ -94,3 +98,14 @@ restaurants, and menu items.\
 -   Various helpful information are also present for understanding the system.
 
 ------------------------------------------------------------------------
+
+## 📸 Screenshots
+
+### Login Page
+![Login Page](docs/login.png)
+
+### Restaurant List
+![Restaurant List](docs/restaurants.png)
+
+### Order Checkout
+![Order Checkout](docs/menu.png)
