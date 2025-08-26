@@ -31,6 +31,68 @@ public class OrderService {
     private final OrderItemRepository orderItemRepository;
     private final UserRepository userRepository;
 
+    public Object getOrderById(Long orderId, String role, String country, String username) throws AccessDeniedException {
+        Order order = orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("Order not found"));
+        
+        // Convert string country to enum for comparison
+        Country countryEnum;
+        try {
+            countryEnum = Country.valueOf(country.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            throw new RuntimeException("Invalid country: " + country);
+        }
+
+        // Check access permissions
+        if (!"ADMIN".equals(role) && !order.getRestaurant().getCountry().equals(countryEnum)) {
+            throw new AccessDeniedException("You are not authorized to view this order");
+        }
+
+        // Additional check: users can only view their own orders (except ADMIN)
+        if (!"ADMIN".equals(role) && !order.getUser().getName().equals(username)) {
+            throw new AccessDeniedException("You can only view your own orders");
+        }
+
+        // Convert to DTO inline
+        RestaurantDto restaurantDto = new RestaurantDto(
+                order.getRestaurant().getId(),
+                order.getRestaurant().getName(),
+                order.getRestaurant().getCountry(),
+                order.getRestaurant().getMenuItemList().stream()
+                        .map(menuItem -> new MenuItemDto(
+                                menuItem.getId(),
+                                menuItem.getName(),
+                                menuItem.getPrice(),
+                                menuItem.getRestaurant().getId()
+                        ))
+                        .collect(Collectors.toList())
+        );
+        
+        List<OrderItemDto> orderItemDtos = order.getOrderItemList().stream()
+                .map(orderItem -> new OrderItemDto(
+                        orderItem.getId(),
+                        orderItem.getOrder().getId(),
+                        new MenuItemDto(
+                                orderItem.getMenuItem().getId(),
+                                orderItem.getMenuItem().getName(),
+                                orderItem.getMenuItem().getPrice(),
+                                orderItem.getMenuItem().getRestaurant().getId()
+                        ),
+                        orderItem.getQuantity(),
+                        orderItem.getPrice()
+                ))
+                .collect(Collectors.toList());
+
+        return new OrderDto(
+                order.getId(),
+                order.getUser() != null ? order.getUser().getId() : null,
+                restaurantDto,
+                orderItemDtos,
+                order.getStatus(),
+                order.getTotalAmount(),
+                order.getCreatedAt()
+        );
+    }
+
     public Object createOrder(Long restaurantId, List<Long> menuItemIds, String role, String country, String username) throws Exception {
         Optional<Restaurant> restaurant = restaurantRepository.findById(restaurantId);
 

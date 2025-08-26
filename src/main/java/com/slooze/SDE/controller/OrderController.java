@@ -17,6 +17,21 @@ import java.util.List;
 public class OrderController {
     private final OrderService orderService;
 
+    @GetMapping("/{orderId}")
+    public ResponseEntity<?> getOrderById(@PathVariable Long orderId, HttpServletRequest request) {
+        String role = request.getAttribute("role").toString();
+        String country = request.getAttribute("country").toString();
+        String username = request.getAttribute("username").toString();
+
+        try {
+            return ResponseEntity.ok(orderService.getOrderById(orderId, role, country, username));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
+    }
+
     @PostMapping
     public ResponseEntity<?> createOrder(@RequestParam Long restaurantId, @RequestBody List<Long> menuItemIds, HttpServletRequest request, HttpServletResponse httpServletResponse) {
         String role = request.getAttribute("role").toString();
