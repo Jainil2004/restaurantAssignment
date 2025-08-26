@@ -11,5 +11,5 @@ public class MenuItemDto {
     private Long id;
     private String name;
     private Double price;
-    private Long restaurantId; // Just store the restaurant ID instead of the full object
+    private Long restaurantId;
 }

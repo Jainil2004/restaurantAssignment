@@ -33,8 +33,7 @@ public class OrderService {
 
     public Object getOrderById(Long orderId, String role, String country, String username) throws AccessDeniedException {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new EntityNotFoundException("Order not found"));
-        
-        // Convert string country to enum for comparison
+
         Country countryEnum;
         try {
             countryEnum = Country.valueOf(country.toUpperCase());
@@ -42,17 +41,14 @@ public class OrderService {
             throw new RuntimeException("Invalid country: " + country);
         }
 
-        // Check access permissions
         if (!"ADMIN".equals(role) && !order.getRestaurant().getCountry().equals(countryEnum)) {
             throw new AccessDeniedException("You are not authorized to view this order");
         }
 
-        // Additional check: users can only view their own orders (except ADMIN)
         if (!"ADMIN".equals(role) && !order.getUser().getName().equals(username)) {
             throw new AccessDeniedException("You can only view your own orders");
         }
 
-        // Convert to DTO inline
         RestaurantDto restaurantDto = new RestaurantDto(
                 order.getRestaurant().getId(),
                 order.getRestaurant().getName(),
@@ -100,7 +96,6 @@ public class OrderService {
             throw new EntityNotFoundException("restaurant not found");
         }
 
-        // Convert string country to enum for comparison
         Country countryEnum;
         try {
             countryEnum = Country.valueOf(country.toUpperCase());
@@ -122,13 +117,11 @@ public class OrderService {
 
         double totalAmount = menuItems.stream().mapToDouble(MenuItem::getPrice).sum();
 
-        // Find the user by username
         Optional<User> user = userRepository.findUserByName(username);
         if (user.isEmpty()) {
             throw new EntityNotFoundException("user not found: " + username);
         }
 
-        // Create the order first
         Order order = Order.builder()
                 .user(user.get())
                 .restaurant(restaurant.get())
@@ -139,7 +132,6 @@ public class OrderService {
         
         Order savedOrder = orderRepository.save(order);
 
-        // Create OrderItems for each menu item (assuming quantity 1 for each)
         List<OrderItem> orderItems = new ArrayList<>();
         for (MenuItem menuItem : menuItems) {
             OrderItem orderItem = OrderItem.builder()
@@ -151,10 +143,8 @@ public class OrderService {
             orderItems.add(orderItem);
         }
         
-        // Save order items
         orderItemRepository.saveAll(orderItems);
         
-        // Update the order with the order items
         savedOrder.setOrderItemList(orderItems);
 
         Payment payment = Payment.builder()
@@ -166,7 +156,6 @@ public class OrderService {
         paymentRepository.save(payment);
         orderRepository.save(order);
         
-        // Convert to DTO inline
         RestaurantDto restaurantDto = new RestaurantDto(
                 savedOrder.getRestaurant().getId(),
                 savedOrder.getRestaurant().getName(),
@@ -232,7 +221,6 @@ public class OrderService {
         paymentRepository.save(payment);
         orderRepository.save(order);
         
-        // Convert to DTO inline
         RestaurantDto restaurantDto = new RestaurantDto(
                 order.getRestaurant().getId(),
                 order.getRestaurant().getName(),
@@ -284,7 +272,6 @@ public class OrderService {
             throw new AccessDeniedException("you are not authorized to make this request");
          }
 
-         // Find the payment associated with this order
          Optional<Payment> paymentOpt = paymentRepository.findByOrder(order);
          if (paymentOpt.isEmpty()) {
             throw new EntityNotFoundException("Payment not found for this order");
@@ -300,7 +287,6 @@ public class OrderService {
 
          orderRepository.save(order);
          
-         // Convert to DTO inline
          RestaurantDto restaurantDto = new RestaurantDto(
                  order.getRestaurant().getId(),
                  order.getRestaurant().getName(),

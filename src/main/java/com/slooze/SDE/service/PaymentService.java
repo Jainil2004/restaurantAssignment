@@ -44,7 +44,6 @@ public class PaymentService {
         Payment paymentObject = payment.get();
         Order orderObject = paymentObject.getOrder();
         
-        // Convert to OrderDto to avoid circular references
         OrderDto orderDto = convertToOrderDto(orderObject);
         
         return new PaymentDto(paymentObject.getId(),
@@ -63,7 +62,6 @@ public class PaymentService {
         if (payment.isPresent()) {
             Payment paymentObject = payment.get();
             
-            // Log current state
             System.out.println("Updating payment ID: " + paymentId);
             System.out.println("Current method: " + paymentObject.getPaymentMethod());
             System.out.println("Current status: " + paymentObject.getStatus());
@@ -82,7 +80,6 @@ public class PaymentService {
             paymentRepository.save(paymentObject);
             System.out.println("Payment saved successfully");
             
-            // Convert to OrderDto to avoid circular references
             OrderDto orderDto = convertToOrderDto(paymentObject.getOrder());
             
             return new PaymentDto(paymentObject.getId(),

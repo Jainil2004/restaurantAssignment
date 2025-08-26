@@ -28,7 +28,6 @@ public class RestaurantService {
             restaurants = restaurantRepository.findRestaurantByCountry(Country.valueOf(country.toUpperCase()));
         }
 
-        // Convert entities to DTOs
         return restaurants.stream()
                 .map(restaurant -> {
                     List<MenuItemDto> menuItemDtos = restaurant.getMenuItemList().stream()
@@ -58,7 +57,6 @@ public class RestaurantService {
             throw new AccessDeniedException("You are not allowed to view this restaurant");
         }
 
-        // Convert MenuItem entities to MenuItemDtos
         return restaurant.getMenuItemList().stream()
                 .map(menuItem -> new MenuItemDto(
                         menuItem.getId(),

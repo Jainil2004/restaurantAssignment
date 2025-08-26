@@ -7,8 +7,6 @@ public class PasswordGenerator {
         String raw = "help";
         String hash = new BCryptPasswordEncoder().encode(raw);
         System.out.println("BCrypt hash for " + raw + " = " + hash);
-        String hashFromDb = "$2a$10$LO0IjklBKQbCydU.NrlQ0eeiwnkjMk5aKpVylL9itjEa3RmpEpMqW";
-        System.out.println(new BCryptPasswordEncoder().matches(raw, hashFromDb));
     }
 }
 
