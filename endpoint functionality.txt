@@ -1,0 +1,35 @@
+bugs fixed in testing:
+1. user not getting associated with the orders
+
+Controller and service Functionality
+Auth controller and service: working as expected
+restaurant controller and service: working as expected
+order controller and service: working as expected
+payment controller and service: working as expected
+
+member functionality:
+auth: validated
+view restaurants and menu items: validated
+create order: validated (check output schema verify in DTO)
+checkout order: validated (members are not allowed to checkout)
+cancel order: validated (members are not allowed to cancel already created orders)
+update payment method: validated (members are not allowed to update payment methods)
+
+Manager functionality:
+auth: validated
+view restaurants and menu items: validated
+create order: validated
+checkout order: validated
+cancel order: validated
+update payment method: validated (managers are not allowed to change payment methods)
+
+ADMIN functionality:
+auth: pending
+view restaurants and menu items: pending
+create order: pending
+checkout order: pending
+cancel order: pending
+update payment method: pending
+
+
+

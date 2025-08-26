@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurant App - Login</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 400px; 
+            margin: 50px auto; 
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .login-container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h2 { text-align: center; color: #333; margin-bottom: 30px; }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            margin: 10px 0; 
+            border: 1px solid #ddd; 
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+        button { 
+            width: 100%; 
+            padding: 12px; 
+            background-color: #007bff; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        button:hover { background-color: #0056b3; }
+        #message { 
+            margin: 15px 0; 
+            padding: 10px; 
+            border-radius: 5px; 
+            text-align: center;
+        }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .loading { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .demo-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+<div class="login-container">
+    <h2>Restaurant Management System</h2>
+    <form id="loginForm">
+        <input type="text" id="username" placeholder="Username" required>
+        <input type="password" id="password" placeholder="Password" required>
+        <button type="submit" id="loginButton">Login</button>
+    </form>
+    <div id="message"></div>
+    
+    <div class="demo-info">
+        <strong>Demo Information:</strong><br>
+        • Different user roles have different permissions<br>
+        • ADMIN: Can access all restaurants and manage orders<br>
+        • MANAGER: Can manage orders for their country<br>
+        • MEMBER: Can view restaurants and place orders only<br>
+    </div>
+</div>
+
+<script src="app.js"></script>
+<script>
+    // Check if already logged in
+    if (getToken()) {
+        window.location.href = "restaurants.html";
+    }
+
+    document.getElementById("loginForm").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById("username").value;
+        const password = document.getElementById("password").value;
+        const loginButton = document.getElementById("loginButton");
+        const messageDiv = document.getElementById("message");
+
+        // Show loading state
+        loginButton.disabled = true;
+        loginButton.textContent = "Logging in...";
+        messageDiv.innerHTML = '<div class="loading">Authenticating...</div>';
+
+        try {
+            const res = await fetch("http://localhost:8080/auth", {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: `username=${encodeURIComponent(username)}&password=${encodeURIComponent(password)}`
+            });
+
+            if (res.ok) {
+                const token = await res.text();
+                localStorage.setItem("jwt", token);
+                
+                // Show success message briefly
+                messageDiv.innerHTML = '<div style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; padding: 10px; border-radius: 5px;">Login successful! Redirecting...</div>';
+                
+                // Redirect after a short delay
+                setTimeout(() => {
+                    window.location.href = "restaurants.html";
+                }, 1000);
+            } else {
+                const errorText = await res.text();
+                messageDiv.innerHTML = `<div class="error">Login failed: ${errorText || 'Invalid credentials'}</div>`;
+            }
+        } catch (error) {
+            messageDiv.innerHTML = `<div class="error">Network error: ${error.message}</div>`;
+        } finally {
+            // Reset button state
+            loginButton.disabled = false;
+            loginButton.textContent = "Login";
+        }
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .user-info { font-size: 14px; color: #666; }
+        .back-button { background-color: #6c757d; color: white; border: none; border-radius: 3px; padding: 8px 15px; cursor: pointer; }
+        .section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background-color: #f9f9f9; }
+        .payment-info { background-color: white; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .payment-actions { margin: 15px 0; }
+        .input-group { margin: 10px 0; }
+        .input-group label { display: inline-block; width: 120px; font-weight: bold; }
+        .input-group input, .input-group select { padding: 8px; border: 1px solid #ddd; border-radius: 3px; width: 200px; }
+        button { margin: 5px; padding: 10px 15px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; }
+        .primary-button { background-color: #007bff; color: white; }
+        .success-button { background-color: #28a745; color: white; }
+        .warning-button { background-color: #ffc107; color: black; }
+        .danger-button { background-color: #dc3545; color: white; }
+        button:hover { opacity: 0.8; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
+        #message { margin: 15px 0; padding: 12px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .warning { background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .status-badge { padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+        .status-pending { background-color: #fff3cd; color: #856404; }
+        .status-paid { background-color: #d4edda; color: #155724; }
+        .status-refunded { background-color: #f8d7da; color: #721c24; }
+        .status-unknown { background-color: #e2e3e5; color: #383d41; }
+        .method-cash { background-color: #e7f3ff; color: #004085; }
+        .method-card { background-color: #f0f9ff; color: #1e40af; }
+        .method-upi { background-color: #ecfdf5; color: #065f46; }
+        .method-unknown { background-color: #e2e3e5; color: #383d41; }
+        .admin-only { border-left: 4px solid #17a2b8; padding-left: 15px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>Payment Management</h2>
+    <div class="user-info">
+        <span id="userInfo"></span>
+        <button class="back-button" onclick="goBack()">Back to Orders</button>
+    </div>
+</div>
+
+<div class="section">
+    <h3>Get Payment Information</h3>
+    <p>Enter an Order ID to view and manage payment details:</p>
+    <div class="input-group">
+        <label for="orderIdInput">Order ID:</label>
+        <input type="number" id="orderIdInput" placeholder="Enter Order ID" min="1">
+        <button class="primary-button" onclick="loadPayment()">Load Payment</button>
+    </div>
+</div>
+
+<div id="paymentSection" class="section" style="display: none;">
+    <h3>Payment Details</h3>
+    <div id="paymentInfo" class="payment-info">
+        <!-- Payment information will be displayed here -->
+    </div>
+    
+    <div id="adminActions" class="admin-only" style="display: none;">
+        <h4>Admin Actions - Update Payment</h4>
+        <div class="payment-actions">
+            <div class="input-group">
+                <label for="paymentMethodSelect">Payment Method:</label>
+                <select id="paymentMethodSelect">
+                    <option value="">-- Select Method --</option>
+                    <option value="CASH">Cash</option>
+                    <option value="CARD">Card</option>
+                    <option value="UPI">UPI</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label for="paymentStatusSelect">Payment Status:</label>
+                <select id="paymentStatusSelect">
+                    <option value="">-- Select Status --</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="PAID">Paid</option>
+                    <option value="REFUNDED">Refunded</option>
+                </select>
+            </div>
+            <button class="success-button" onclick="updatePayment()">Update Payment</button>
+            <button class="warning-button" onclick="resetForm()">Reset Form</button>
+        </div>
+        <p><small><strong>Note:</strong> Only ADMIN users can update payment methods and status. Changes will be applied immediately.</small></p>
+    </div>
+</div>
+
+<div id="message"></div>
+
+<script src="app.js"></script>
+<script>
+    let currentPayment = null;
+    
+    // Display user info and check admin privileges
+    const userInfo = getUserInfo();
+    if (userInfo) {
+        document.getElementById("userInfo").textContent = 
+            `${userInfo.username} (${userInfo.role}) - ${userInfo.country}`;
+            
+        // Show admin actions only for admin users
+        if (userInfo.role === "ADMIN") {
+            document.getElementById("adminActions").style.display = "block";
+        } else {
+            showMessage("You are not an ADMIN. You can view payment information but cannot modify it.", "info");
+        }
+    }
+
+    // Auto-load payment if order ID is passed from orders page
+    const urlParams = new URLSearchParams(window.location.search);
+    const orderIdFromUrl = urlParams.get('orderId');
+    if (orderIdFromUrl) {
+        document.getElementById("orderIdInput").value = orderIdFromUrl;
+        loadPayment();
+    }
+
+    async function loadPayment() {
+        const orderId = document.getElementById("orderIdInput").value;
+        if (!orderId || orderId <= 0) {
+            showMessage("Please enter a valid Order ID", "error");
+            return;
+        }
+
+        try {
+            showMessage("Loading payment information...", "info");
+            
+            // Debug: Log user info and token
+            console.log("User info:", userInfo);
+            console.log("JWT Token:", getToken());
+            
+            const payment = await fetchWithAuth(`http://localhost:8080/payments/order/${orderId}`);
+            currentPayment = payment;
+            
+            displayPaymentInfo(payment);
+            document.getElementById("paymentSection").style.display = "block";
+            showMessage("Payment information loaded successfully!", "success");
+            
+        } catch (error) {
+            console.error("Detailed error:", error);
+            showMessage(`Error loading payment: ${error.message}`, "error");
+            document.getElementById("paymentSection").style.display = "none";
+        }
+    }
+
+    function displayPaymentInfo(payment) {
+        const paymentInfoDiv = document.getElementById("paymentInfo");
+        
+        // Handle null/undefined values with fallbacks
+        const paymentStatus = payment.status || 'UNKNOWN';
+        const paymentMethod = payment.paymentMethod || 'UNKNOWN';
+        
+        const statusClass = `status-${paymentStatus.toLowerCase()}`;
+        const methodClass = `method-${paymentMethod.toLowerCase()}`;
+        
+        paymentInfoDiv.innerHTML = `
+            <h4>Payment ID: ${payment.id}</h4>
+            <p><strong>Order ID:</strong> ${payment.order.id}</p>
+            <p><strong>Restaurant:</strong> ${payment.order.restaurant.name} (${payment.order.restaurant.country})</p>
+            <p><strong>Total Amount:</strong> $${payment.order.totalAmount.toFixed(2)}</p>
+            <p><strong>Order Status:</strong> ${payment.order.status}</p>
+            <p><strong>Payment Method:</strong> <span class="status-badge ${methodClass}">${paymentMethod}</span></p>
+            <p><strong>Payment Status:</strong> <span class="status-badge ${statusClass}">${paymentStatus}</span></p>
+            <p><strong>Order Created:</strong> ${new Date(payment.order.createdAt).toLocaleString()}</p>
+        `;
+        
+        // Pre-fill the form with current values for admins
+        if (userInfo && userInfo.role === "ADMIN") {
+            document.getElementById("paymentMethodSelect").value = paymentMethod;
+            document.getElementById("paymentStatusSelect").value = paymentStatus;
+        }
+    }
+
+    async function updatePayment() {
+        if (!currentPayment) {
+            showMessage("No payment loaded. Please load a payment first.", "error");
+            return;
+        }
+
+        if (!userInfo || userInfo.role !== "ADMIN") {
+            showMessage("Only ADMIN users can update payments.", "error");
+            return;
+        }
+
+        const newMethod = document.getElementById("paymentMethodSelect").value;
+        const newStatus = document.getElementById("paymentStatusSelect").value;
+        
+        if (!newMethod && !newStatus) {
+            showMessage("Please select at least one field to update (Method or Status).", "warning");
+            return;
+        }
+
+        try {
+            showMessage("Updating payment...", "info");
+            
+            // Build URL with query parameters
+            const params = new URLSearchParams();
+            if (newMethod) params.append('method', newMethod);
+            if (newStatus) params.append('status', newStatus);
+            
+            const updatedPayment = await fetchWithAuth(
+                `http://localhost:8080/payments/${currentPayment.id}?${params.toString()}`, 
+                { method: "PATCH" }
+            );
+            
+            currentPayment = updatedPayment;
+            displayPaymentInfo(updatedPayment);
+            showMessage("Payment updated successfully!", "success");
+            
+        } catch (error) {
+            showMessage(`Error updating payment: ${error.message}`, "error");
+            console.error("Payment update error:", error);
+        }
+    }
+
+    function resetForm() {
+        if (currentPayment) {
+            document.getElementById("paymentMethodSelect").value = currentPayment.paymentMethod;
+            document.getElementById("paymentStatusSelect").value = currentPayment.status;
+            showMessage("Form reset to current payment values.", "info");
+        } else {
+            document.getElementById("paymentMethodSelect").value = "";
+            document.getElementById("paymentStatusSelect").value = "";
+            showMessage("Form cleared.", "info");
+        }
+    }
+
+    function showMessage(message, type) {
+        const msgDiv = document.getElementById("message");
+        msgDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        
+        // Auto-hide success and info messages after 5 seconds
+        if (type === "success" || type === "info") {
+            setTimeout(() => {
+                msgDiv.innerHTML = "";
+            }, 5000);
+        }
+    }
+
+    function goBack() {
+        window.location.href = "orders.html";
+    }
+</script>
+</body>
+</html>

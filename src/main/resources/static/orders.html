@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order Management</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .order-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .order-actions { margin: 10px 0; }
+        button { margin: 5px; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }
+        .back-button { background-color: #6c757d; color: white; }
+        .checkout-button { background-color: #28a745; color: white; }
+        .cancel-button { background-color: #dc3545; color: white; }
+        .info-button { background-color: #17a2b8; color: white; }
+        .payment-button { background-color: #6f42c1; color: white; }
+        #msg { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .user-info { font-size: 14px; color: #666; }
+        .order-input { margin: 10px 0; }
+        .order-input input { padding: 5px; margin: 5px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>Order Management</h2>
+    <div class="user-info">
+        <span id="userInfo"></span>
+        <button class="back-button" onclick="goBack()">Back to Restaurants</button>
+    </div>
+</div>
+
+<div class="order-section">
+    <h3>Last Order</h3>
+    <div id="lastOrderInfo">
+        <p>No recent order found. <a href="restaurants.html">Place a new order</a></p>
+    </div>
+</div>
+
+<div class="order-section">
+    <h3>Order Actions</h3>
+    <p>Enter an Order ID to perform actions:</p>
+    <div class="order-input">
+        <input type="number" id="orderIdInput" placeholder="Order ID" min="1">
+        <button class="info-button" onclick="showOrderActions()">Show Actions</button>
+    </div>
+    
+    <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
+        <small><strong>Quick Test:</strong> Use Order ID <code>1</code> to test payment management with existing data.</small>
+    </div>
+    
+    <div id="orderActions" style="display: none;">
+        <div class="order-actions">
+            <button class="checkout-button" onclick="checkoutOrder()">Checkout Order</button>
+            <button class="cancel-button" onclick="cancelOrder()">Cancel Order</button>
+            <button class="payment-button" onclick="managePayment()" id="managePaymentBtn" style="display: none;">Manage Payment</button>
+        </div>
+        <p><small>Note: Members cannot checkout or cancel orders. Only Managers and Admins can perform these actions.</small></p>
+    </div>
+</div>
+
+<div id="msg"></div>
+
+<script src="app.js"></script>
+<script>
+    // Display user info
+    const userInfo = getUserInfo();
+    if (userInfo) {
+        document.getElementById("userInfo").textContent = 
+            `${userInfo.username} (${userInfo.role}) - ${userInfo.country}`;
+    }
+
+    // Show last order if available
+    const lastOrderId = localStorage.getItem("lastOrderId");
+    if (lastOrderId) {
+        document.getElementById("lastOrderInfo").innerHTML = `
+            <p><strong>Last Order ID:</strong> ${lastOrderId}</p>
+            <button class="info-button" onclick="useLastOrder()">Use This Order ID</button>
+        `;
+    }
+
+    function useLastOrder() {
+        const lastOrderId = localStorage.getItem("lastOrderId");
+        if (lastOrderId) {
+            document.getElementById("orderIdInput").value = lastOrderId;
+            showOrderActions();
+        }
+    }
+
+    function showOrderActions() {
+        const orderIdInput = document.getElementById("orderIdInput");
+        if (!orderIdInput.value || orderIdInput.value <= 0) {
+            showMessage("Please enter a valid Order ID", "error");
+            return;
+        }
+        
+        document.getElementById("orderActions").style.display = "block";
+        
+        // Show payment management button only for ADMIN users
+        const managePaymentBtn = document.getElementById("managePaymentBtn");
+        if (userInfo && userInfo.role === "ADMIN") {
+            managePaymentBtn.style.display = "inline-block";
+        } else {
+            managePaymentBtn.style.display = "none";
+        }
+        
+        // Check user role and show appropriate message
+        if (userInfo && userInfo.role === "MEMBER") {
+            showMessage("Note: As a MEMBER, you cannot checkout or cancel orders. Only MANAGER and ADMIN can perform these actions.", "info");
+        } else if (userInfo && userInfo.role === "ADMIN") {
+            showMessage("Note: As an ADMIN, you can manage payments, checkout orders, and cancel orders.", "info");
+        }
+    }
+
+    function checkoutOrder() {
+        const orderId = document.getElementById("orderIdInput").value;
+        if (!orderId) {
+            showMessage("Please enter an Order ID", "error");
+            return;
+        }
+
+        fetchWithAuth(`http://localhost:8080/orders/${orderId}/checkout`, { 
+            method: "POST" 
+        })
+        .then(result => {
+            showMessage(`Order ${orderId} has been successfully checked out!`, "success");
+            console.log("Checkout result:", result);
+        })
+        .catch(err => {
+            showMessage(`Error checking out order ${orderId}: ${err.message}`, "error");
+            console.error(err);
+        });
+    }
+
+    function cancelOrder() {
+        const orderId = document.getElementById("orderIdInput").value;
+        if (!orderId) {
+            showMessage("Please enter an Order ID", "error");
+            return;
+        }
+
+        if (!confirm(`Are you sure you want to cancel order ${orderId}?`)) {
+            return;
+        }
+
+        fetchWithAuth(`http://localhost:8080/orders/${orderId}/cancel`, { 
+            method: "POST" 
+        })
+        .then(result => {
+            showMessage(`Order ${orderId} has been successfully cancelled!`, "success");
+            console.log("Cancel result:", result);
+        })
+        .catch(err => {
+            showMessage(`Error cancelling order ${orderId}: ${err.message}`, "error");
+            console.error(err);
+        });
+    }
+
+    function managePayment() {
+        const orderId = document.getElementById("orderIdInput").value;
+        if (!orderId) {
+            showMessage("Please enter an Order ID", "error");
+            return;
+        }
+
+        // Navigate to payment management page with the order ID
+        window.location.href = `payments.html?orderId=${orderId}`;
+    }
+
+    function showMessage(message, type) {
+        const msgDiv = document.getElementById("msg");
+        msgDiv.innerHTML = `<div class="${type}">${message}</div>`;
+        
+        // Auto-hide success messages after 5 seconds
+        if (type === "success") {
+            setTimeout(() => {
+                msgDiv.innerHTML = "";
+            }, 5000);
+        }
+    }
+
+    function goBack() {
+        window.location.href = "restaurants.html";
+    }
+</script>
+</body>
+</html>

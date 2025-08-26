@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Menu</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .menu-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        .menu-item input { margin-right: 10px; }
+        .selected-items { background-color: #f0f8ff; padding: 10px; margin: 20px 0; border-radius: 5px; }
+        button { margin: 5px; padding: 8px 15px; }
+        .back-button { background-color: #6c757d; color: white; border: none; border-radius: 3px; }
+        .order-button { background-color: #007bff; color: white; border: none; border-radius: 3px; }
+        #msg { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>Restaurant Menu</h2>
+    <button class="back-button" onclick="goBack()">Back to Restaurants</button>
+</div>
+
+<div id="menuList"></div>
+
+<div class="selected-items">
+    <h3>Selected Items:</h3>
+    <div id="selectedItemsList">No items selected</div>
+    <p><strong>Total: $<span id="totalPrice">0.00</span></strong></p>
+</div>
+
+<button class="order-button" onclick="placeOrder()" id="orderButton" disabled>Place Order</button>
+<div id="msg"></div>
+
+<script src="app.js"></script>
+<script>
+    const restaurantId = localStorage.getItem("restaurantId");
+    const selectedItems = [];
+    let menuItems = [];
+
+    if (!restaurantId) {
+        alert("No restaurant selected");
+        window.location.href = "restaurants.html";
+    }
+
+    // Fetch menu items
+    fetchWithAuth(`http://localhost:8080/restaurants/${restaurantId}/menu`)
+        .then(menu => {
+            menuItems = menu;
+            const container = document.getElementById("menuList");
+            menu.forEach(item => {
+                const div = document.createElement("div");
+                div.className = "menu-item";
+                div.innerHTML = `
+                    <input type="checkbox" value="${item.id}" onchange="toggleItem(this, '${item.name}', ${item.price})">
+                    <strong>${item.name}</strong> - $${item.price.toFixed(2)}
+                `;
+                container.appendChild(div);
+            });
+        })
+        .catch(err => {
+            document.getElementById("msg").innerHTML = `<div class="error">Error loading menu: ${err.message}</div>`;
+            console.error(err);
+        });
+
+    function toggleItem(checkbox, itemName, itemPrice) {
+        const itemId = parseInt(checkbox.value);
+        
+        if (checkbox.checked) {
+            selectedItems.push({
+                id: itemId,
+                name: itemName,
+                price: itemPrice
+            });
+        } else {
+            const idx = selectedItems.findIndex(item => item.id === itemId);
+            if (idx > -1) selectedItems.splice(idx, 1);
+        }
+        
+        updateSelectedItemsDisplay();
+    }
+
+    function updateSelectedItemsDisplay() {
+        const container = document.getElementById("selectedItemsList");
+        const totalElement = document.getElementById("totalPrice");
+        const orderButton = document.getElementById("orderButton");
+        
+        if (selectedItems.length === 0) {
+            container.textContent = "No items selected";
+            totalElement.textContent = "0.00";
+            orderButton.disabled = true;
+        } else {
+            container.innerHTML = selectedItems.map(item => 
+                `<div>• ${item.name} - $${item.price.toFixed(2)}</div>`
+            ).join('');
+            
+            const total = selectedItems.reduce((sum, item) => sum + item.price, 0);
+            totalElement.textContent = total.toFixed(2);
+            orderButton.disabled = false;
+        }
+    }
+
+    function placeOrder() {
+        if (selectedItems.length === 0) {
+            alert("Please select at least one item");
+            return;
+        }
+
+        const menuItemIds = selectedItems.map(item => item.id);
+        
+        fetchWithAuth(`http://localhost:8080/orders?restaurantId=${restaurantId}`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(menuItemIds)
+        })
+        .then(order => {
+            document.getElementById("msg").innerHTML = 
+                `<div class="success">Order created successfully! Order ID: ${order.id}</div>`;
+            localStorage.setItem("lastOrderId", order.id);
+            
+            // Reset the form
+            selectedItems.length = 0;
+            document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+            updateSelectedItemsDisplay();
+        })
+        .catch(err => {
+            document.getElementById("msg").innerHTML = 
+                `<div class="error">Error placing order: ${err.message}</div>`;
+            console.error(err);
+        });
+    }
+
+    function goBack() {
+        window.location.href = "restaurants.html";
+    }
+</script>
+</body>
+</html>

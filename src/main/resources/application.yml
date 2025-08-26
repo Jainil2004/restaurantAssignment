@@ -1,16 +1,39 @@
+#spring:
+#  datasource:
+#    url: jdbc:h2:mem:SDE
+#    driverClassName: org.h2.Driver
+#    username: sa
+#    password:
+#  jpa:
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
+#  h2:
+#    console:
+#      enabled: true
+#      path: /h2-console
+#server:
+#  port: 8080
+
+
 spring:
   datasource:
-    url: jdbc:h2:mem:SDE
-    driverClassName: org.h2.Driver
-    username: sa
-    password:
+    url: jdbc:postgresql://localhost:5432/slooze   # your db name
+    driver-class-name: org.postgresql.Driver
+    username: postgres     # your postgres username
+    password: postgres # your postgres password
+
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: update     # keep update for dev (creates tables automatically)
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: true
-  h2:
-    console:
-      enabled: true
-      path: /h2-console
+
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
+
+# remove H2 console config (not needed for Postgres)
 server:
   port: 8080

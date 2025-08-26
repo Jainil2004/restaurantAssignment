@@ -26,7 +26,6 @@ import java.util.Collections;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
-    private final HttpServletResponse httpServletResponse;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -46,6 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     );
                     SecurityContextHolder.getContext().setAuthentication(authentication);
 
+                    request.setAttribute("username", claims.getSubject());
                     request.setAttribute("role", role);
                     request.setAttribute("country", claims.get("country", String.class));
                 }

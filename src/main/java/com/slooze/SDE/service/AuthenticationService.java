@@ -17,17 +17,41 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
-    public String login(String username, String password) {
-        User user = userRepository.findUserByName(username).orElseThrow(() -> new RuntimeException("user not found"));
+//    public String login(String username, String password) {
+//        User user = userRepository.findUserByName(username).orElseThrow(() -> new RuntimeException("user not found"));
+//
+////        if (!passwordEncoder.matches(password, user.getPassword())) {
+////            throw new RuntimeException("invalid credentials");
+////        }
+//
+//        if (!passwordEncoder.matches(password, user.getPassword())) {
+//            System.out.println("Raw password: " + password);
+//            System.out.println("Hash in DB: " + user.getPassword());
+//            throw new RuntimeException("invalid credentials");
+//        }
+//
+//
+//        return jwtService.generateToken(
+//                user.getName(), user.getRole().name(), user.getCountry().name()
+//        );
+//    }
 
-        if (!passwordEncoder.matches(password, user.getPassword())) {
-            throw new RuntimeException("invalid credentials");
-        }
+public String login(String username, String password) {
+    System.out.println(">>> AuthenticationService.login called");
+    User user = userRepository.findUserByName(username)
+            .orElseThrow(() -> new RuntimeException("user not found"));
 
-        return jwtService.generateToken(
-                user.getName(), user.getRole().name(), user.getCountry().name()
-        );
+    System.out.println(">>> Found user: " + user.getName());
 
+    if (!passwordEncoder.matches(password, user.getPassword())) {
+        System.out.println("Raw password: " + password);
+        System.out.println("Hash in DB: " + user.getPassword());
+        throw new RuntimeException("invalid credentials");
     }
+
+    return jwtService.generateToken(
+            user.getName(), user.getRole().name(), user.getCountry().name()
+    );
+}
 
 }

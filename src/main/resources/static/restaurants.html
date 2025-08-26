@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Restaurants</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .header { display: flex; justify-content: space-between; align-items: center; }
+        .user-info { font-size: 14px; color: #666; }
+        .restaurant-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        button { margin: 5px; padding: 5px 10px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h2>Restaurants</h2>
+    <div class="user-info">
+        <span id="userInfo"></span>
+        <button onclick="goToOrders()">Manage Orders</button>
+        <button onclick="goToPayments()" id="paymentsBtn" style="display: none;">Manage Payments</button>
+        <button onclick="logout()">Logout</button>
+    </div>
+</div>
+<div id="restaurantList"></div>
+<script src="app.js"></script>
+<script>
+    // Display user info
+    const userInfo = getUserInfo();
+    if (userInfo) {
+        document.getElementById("userInfo").textContent = 
+            `${userInfo.username} (${userInfo.role}) - ${userInfo.country}`;
+            
+        // Show payment management button only for ADMIN users
+        if (userInfo.role === "ADMIN") {
+            document.getElementById("paymentsBtn").style.display = "inline-block";
+        }
+    }
+
+    fetchWithAuth("http://localhost:8080/restaurants")
+        .then(restaurants => {
+            const container = document.getElementById("restaurantList");
+            restaurants.forEach(r => {
+                const div = document.createElement("div");
+                div.className = "restaurant-item";
+                div.innerHTML = `
+                    <h3>${r.name}</h3>
+                    <p>Country: ${r.country}</p>
+                    <button onclick="goToMenu(${r.id})">View Menu</button>
+                `;
+                container.appendChild(div);
+            });
+        })
+        .catch(err => {
+            alert("Error loading restaurants: " + err.message);
+            console.error(err);
+        });
+
+    function goToMenu(id) {
+        localStorage.setItem("restaurantId", id);
+        window.location.href = "menu.html";
+    }
+
+    function goToOrders() {
+        window.location.href = "orders.html";
+    }
+
+    function goToPayments() {
+        window.location.href = "payments.html";
+    }
+
+    function logout() {
+        localStorage.removeItem("jwt");
+        localStorage.removeItem("restaurantId");
+        localStorage.removeItem("lastOrderId");
+        window.location.href = "index.html";
+    }
+</script>
+</body>
+</html>

@@ -12,7 +12,7 @@ import java.util.Date;
 @RequiredArgsConstructor
 public class JwtService {
 
-    private static final String SECRET_KEY = "super-secret-change-me";
+    private static final String SECRET_KEY = "8f9a3c62d0b74e4b927f1a86b4c53d7f13c5e9f8a4d2b1c6e7f0a9d8b3c5f7e1";
 
     public String generateToken(String username, String role, String country) {
         long nowMillies = System.currentTimeMillis();

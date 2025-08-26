@@ -20,9 +20,9 @@ public class Payment {
     @OneToOne
     private Order order;
 
-    private String paymentMethod;
+    @Enumerated(EnumType.STRING)
+    private PaymentMethod paymentMethod;
 
     @Enumerated(EnumType.STRING)
     private PaymentStatus status;
-
 }

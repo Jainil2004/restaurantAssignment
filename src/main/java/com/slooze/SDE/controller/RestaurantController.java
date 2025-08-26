@@ -21,11 +21,17 @@ public class RestaurantController {
     private final RestaurantService restaurantService;
 
     @GetMapping
-    public ResponseEntity<List<Restaurant>> getAllRestaurants(HttpServletRequest request) {
+    public ResponseEntity<?> getAllRestaurants(HttpServletRequest request) {
         String role = request.getAttribute("role").toString();
         String country = request.getAttribute("country").toString();
 
-        return ResponseEntity.ok(restaurantService.getAllRestaurants(role, country));
+        try {
+            return ResponseEntity.ok(restaurantService.getAllRestaurants(role, country));
+        } catch (AccessDeniedException e) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(e.getMessage());
+        }
     }
 
     @GetMapping("/{id}/menu")
