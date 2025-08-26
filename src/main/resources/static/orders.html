@@ -4,64 +4,364 @@
     <meta charset="UTF-8">
     <title>Order Management</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        .header { display: flex; justify-content: space-between; align-items: center; }
-        .order-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
-        .order-actions { margin: 10px 0; }
-        button { margin: 5px; padding: 8px 15px; border: none; border-radius: 3px; cursor: pointer; }
-        .back-button { background-color: #6c757d; color: white; }
-        .checkout-button { background-color: #28a745; color: white; }
-        .cancel-button { background-color: #dc3545; color: white; }
-        .info-button { background-color: #17a2b8; color: white; }
-        .payment-button { background-color: #6f42c1; color: white; }
-        #msg { margin: 10px 0; padding: 10px; border-radius: 5px; }
-        .success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .info { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .user-info { font-size: 14px; color: #666; }
-        .order-input { margin: 10px 0; }
-        .order-input input { padding: 5px; margin: 5px; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f8f9fa;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e23744;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .back-button {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #5a6268;
+            transform: translateY(-2px);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+        
+        .page-title {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        
+        .page-title h1 {
+            font-size: 32px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+        
+        .page-title p {
+            color: #666;
+            font-size: 16px;
+        }
+        
+        .order-section {
+            background: white;
+            margin: 24px 0;
+            padding: 32px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid #eee;
+        }
+        
+        .section-title {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .section-title::before {
+            font-size: 28px;
+        }
+        
+        .recent-order::before { content: '🕒'; }
+        .manage-order::before { content: '⚙️'; }
+        
+        .order-info {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border-left: 4px solid #e23744;
+        }
+        
+        .order-input-section {
+            margin: 24px 0;
+        }
+        
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+        
+        .input-group input {
+            padding: 12px 16px;
+            border: 2px solid #e8e8e8;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        
+        .input-group input:focus {
+            outline: none;
+            border-color: #e23744;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.1);
+        }
+        
+        .demo-hint {
+            background: linear-gradient(135deg, #e8f4fd 0%, #d6eaff 100%);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border-left: 4px solid #4299e1;
+            font-size: 14px;
+        }
+        
+        .demo-hint strong {
+            color: #2d3748;
+        }
+        
+        .order-actions {
+            display: flex;
+            gap: 12px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #e23744 0%, #ff6b35 100%);
+            color: white;
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #38a169 0%, #48bb78 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #e53e3e 0%, #fc8181 100%);
+            color: white;
+        }
+        
+        .btn-info {
+            background: linear-gradient(135deg, #3182ce 0%, #4299e1 100%);
+            color: white;
+        }
+        
+        .btn-purple {
+            background: linear-gradient(135deg, #805ad5 0%, #9f7aea 100%);
+            color: white;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .role-info {
+            background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+            padding: 16px;
+            border-radius: 8px;
+            margin: 16px 0;
+            border-left: 4px solid #ffb74d;
+            font-size: 14px;
+        }
+        
+        #msg {
+            margin: 20px 0;
+            padding: 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        .success {
+            background-color: #f0fff4;
+            color: #22543d;
+            border: 1px solid #38a169;
+        }
+        
+        .error {
+            background-color: #fee;
+            color: #c53030;
+            border: 1px solid #e53e3e;
+        }
+        
+        .info {
+            background-color: #e6fffa;
+            color: #2d3748;
+            border: 1px solid #38b2ac;
+        }
+        
+        .quick-action {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 16px;
+            background: #e23744;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .quick-action:hover {
+            background: #d32f2f;
+            transform: translateY(-1px);
+        }
+        
+        @media (max-width: 768px) {
+            .header-content {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .order-section {
+                padding: 20px;
+            }
+            
+            .page-title h1 {
+                font-size: 24px;
+            }
+            
+            .input-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .order-actions {
+                flex-direction: column;
+            }
+        }
     </style>
 </head>
 <body>
 <div class="header">
-    <h2>Order Management</h2>
-    <div class="user-info">
-        <span id="userInfo"></span>
-        <button class="back-button" onclick="goBack()">Back to Restaurants</button>
-    </div>
-</div>
-
-<div class="order-section">
-    <h3>Last Order</h3>
-    <div id="lastOrderInfo">
-        <p>No recent order found. <a href="restaurants.html">Place a new order</a></p>
-    </div>
-</div>
-
-<div class="order-section">
-    <h3>Order Actions</h3>
-    <p>Enter an Order ID to perform actions:</p>
-    <div class="order-input">
-        <input type="number" id="orderIdInput" placeholder="Order ID" min="1">
-        <button class="info-button" onclick="showOrderActions()">Show Actions</button>
-    </div>
-    
-    <div style="margin: 10px 0; padding: 10px; background-color: #f8f9fa; border-radius: 5px;">
-        <small><strong>Quick Test:</strong> Use Order ID <code>1</code> to test payment management with existing data.</small>
-    </div>
-    
-    <div id="orderActions" style="display: none;">
-        <div class="order-actions">
-            <button class="checkout-button" onclick="checkoutOrder()">Checkout Order</button>
-            <button class="cancel-button" onclick="cancelOrder()">Cancel Order</button>
-            <button class="payment-button" onclick="managePayment()" id="managePaymentBtn" style="display: none;">Manage Payment</button>
+    <div class="header-content">
+        <div class="logo">RestaurantHub</div>
+        <div class="user-info">
+            <span id="userInfo"></span>
+            <button class="back-button" onclick="goBack()">← Back to Restaurants</button>
         </div>
-        <p><small>Note: Members cannot checkout or cancel orders. Only Managers and Admins can perform these actions.</small></p>
     </div>
 </div>
 
-<div id="msg"></div>
+<div class="container">
+    <div class="page-title">
+        <h1>Order Management</h1>
+        <p>Manage your orders and track their status</p>
+    </div>
+
+    <div class="order-section">
+        <h3 class="section-title recent-order">Recent Order</h3>
+        <div id="lastOrderInfo" class="order-info">
+            <p>No recent order found. <a href="restaurants.html" class="quick-action">🍽️ Place a new order</a></p>
+        </div>
+    </div>
+
+    <div class="order-section">
+        <h3 class="section-title manage-order">Manage Orders</h3>
+        <p style="color: #666; margin-bottom: 20px;">Enter an Order ID to perform management actions:</p>
+        
+        <div class="order-input-section">
+            <div class="input-group">
+                <input type="number" id="orderIdInput" placeholder="Enter Order ID" min="1" style="min-width: 200px;">
+                <button class="btn-info" onclick="showOrderActions()">
+                    🔍 Show Actions
+                </button>
+            </div>
+            
+            <div class="demo-hint">
+                <strong>💡 Quick Test:</strong> Use Order ID <code style="background: #fff; padding: 2px 6px; border-radius: 4px; font-weight: bold;">1</code> to test payment management with existing data.
+            </div>
+            
+            <div id="orderActions" style="display: none;">
+                <div class="order-actions">
+                    <button class="btn-success" onclick="checkoutOrder()">
+                        ✅ Checkout Order
+                    </button>
+                    <button class="btn-danger" onclick="cancelOrder()">
+                        ❌ Cancel Order
+                    </button>
+                    <button class="btn-purple" onclick="managePayment()" id="managePaymentBtn" style="display: none;">
+                        💳 Manage Payment
+                    </button>
+                </div>
+                
+                <div class="role-info">
+                    <strong>ℹ️ Note:</strong> Members cannot checkout or cancel orders. Only Managers and Admins can perform these actions.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="msg"></div>
+</div>
 
 <script src="app.js"></script>
 <script>
@@ -76,8 +376,15 @@
     const lastOrderId = localStorage.getItem("lastOrderId");
     if (lastOrderId) {
         document.getElementById("lastOrderInfo").innerHTML = `
-            <p><strong>Last Order ID:</strong> ${lastOrderId}</p>
-            <button class="info-button" onclick="useLastOrder()">Use This Order ID</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <strong style="color: #333;">Last Order ID:</strong> 
+                    <span style="color: #e23744; font-weight: 600; font-size: 18px;">#${lastOrderId}</span>
+                </div>
+                <button class="btn-primary" onclick="useLastOrder()" style="padding: 8px 16px; font-size: 14px;">
+                    📋 Use This Order
+                </button>
+            </div>
         `;
     }
 

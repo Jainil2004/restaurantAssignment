@@ -4,73 +4,223 @@
     <meta charset="UTF-8">
     <title>Restaurant App - Login</title>
     <style>
-        body { 
-            font-family: Arial, sans-serif; 
-            max-width: 400px; 
-            margin: 50px auto; 
-            padding: 20px;
-            background-color: #f5f5f5;
-        }
-        .login-container {
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        h2 { text-align: center; color: #333; margin-bottom: 30px; }
-        input { 
-            width: 100%; 
-            padding: 12px; 
-            margin: 10px 0; 
-            border: 1px solid #ddd; 
-            border-radius: 5px;
+        * {
+            margin: 0;
+            padding: 0;
             box-sizing: border-box;
         }
+        
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .login-container {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #e23744, #ff6b35, #f7931e);
+        }
+        
+        .logo-section {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            font-size: 28px;
+            font-weight: bold;
+            color: #e23744;
+            margin-bottom: 8px;
+        }
+        
+        .tagline {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        
+        h2 { 
+            text-align: center; 
+            color: #333; 
+            margin-bottom: 30px;
+            font-weight: 600;
+            font-size: 24px;
+        }
+        
+        .input-group {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        
+        input { 
+            width: 100%; 
+            padding: 16px 20px; 
+            border: 2px solid #e8e8e8; 
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background-color: #fafafa;
+        }
+        
+        input:focus {
+            outline: none;
+            border-color: #e23744;
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(226, 55, 68, 0.1);
+        }
+        
         button { 
             width: 100%; 
-            padding: 12px; 
-            background-color: #007bff; 
+            padding: 16px; 
+            background: linear-gradient(135deg, #e23744 0%, #ff6b35 100%);
             color: white; 
             border: none; 
-            border-radius: 5px; 
+            border-radius: 12px; 
             cursor: pointer;
             font-size: 16px;
+            font-weight: 600;
             margin-top: 10px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
         }
-        button:hover { background-color: #0056b3; }
+        
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(226, 55, 68, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
         #message { 
-            margin: 15px 0; 
-            padding: 10px; 
-            border-radius: 5px; 
+            margin: 20px 0; 
+            padding: 12px 16px; 
+            border-radius: 8px; 
             text-align: center;
-        }
-        .error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .loading { background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        .demo-info {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
             font-size: 14px;
+            border: none;
+        }
+        
+        .error { 
+            background-color: #fee; 
+            color: #c53030; 
+            border-left: 4px solid #e53e3e;
+        }
+        
+        .loading { 
+            background-color: #e6fffa; 
+            color: #2d3748; 
+            border-left: 4px solid #38b2ac;
+        }
+        
+        .success {
+            background-color: #f0fff4;
+            color: #22543d;
+            border-left: 4px solid #38a169;
+        }
+        
+        .demo-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: linear-gradient(135deg, #f7fafc 0%, #edf2f7 100%);
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.5;
+            border-left: 4px solid #4299e1;
+        }
+        
+        .demo-info strong {
+            color: #2d3748;
+            display: block;
+            margin-bottom: 8px;
+        }
+        
+        .demo-info ul {
+            list-style: none;
+            padding-left: 0;
+        }
+        
+        .demo-info li {
+            margin: 6px 0;
+            padding-left: 16px;
+            position: relative;
+        }
+        
+        .demo-info li::before {
+            content: '•';
+            color: #4299e1;
+            font-weight: bold;
+            position: absolute;
+            left: 0;
+        }
+        
+        .powered-by {
+            text-align: center;
+            margin-top: 20px;
+            color: #999;
+            font-size: 12px;
         }
     </style>
 </head>
 <body>
 <div class="login-container">
-    <h2>Restaurant Management System</h2>
+    <div class="logo-section">
+        <div class="logo">RestaurantHub</div>
+        <div class="tagline">Your favorite food, delivered</div>
+    </div>
+    
+    <h2>Welcome Back</h2>
     <form id="loginForm">
-        <input type="text" id="username" placeholder="Username" required>
-        <input type="password" id="password" placeholder="Password" required>
-        <button type="submit" id="loginButton">Login</button>
+        <div class="input-group">
+            <input type="text" id="username" placeholder="Username" required>
+        </div>
+        <div class="input-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit" id="loginButton">Sign In</button>
     </form>
     <div id="message"></div>
     
     <div class="demo-info">
-        <strong>Demo Information:</strong><br>
-        • Different user roles have different permissions<br>
-        • ADMIN: Can access all restaurants and manage orders<br>
-        • MANAGER: Can manage orders for their country<br>
-        • MEMBER: Can view restaurants and place orders only<br>
+        <strong>Demo Information:</strong>
+        <ul>
+            <li><strong>ADMIN:</strong> Can access all restaurants and manage orders</li>
+            <li><strong>MANAGER:</strong> Can manage orders for their country</li>
+            <li><strong>MEMBER:</strong> Can view restaurants and place orders only</li>
+        </ul>
+    </div>
+    
+    <div class="powered-by">
+        Powered by RestaurantHub Management System
     </div>
 </div>
 
